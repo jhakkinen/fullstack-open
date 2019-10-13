@@ -81,22 +81,45 @@ const App = () => {
     setFilter(event.target.value)
   }
 
-  const addPerson = (event) => {
+  const savePerson = event => {
     event.preventDefault()
-    const personObject = {
+    const existingPerson = persons.find(p => p.name === newName)
+    if (!existingPerson) {
+      addPerson()
+    } else {
+      updatePerson(existingPerson)
+    }
+    setNewName('')
+    setNewNumber('')
+  }
+
+  const updatePerson = person => {
+    const id = person.id
+    if (window.confirm(`${person.name} is already added to the phonebook, replace the old number with the new one?`)) {
+      const changedPerson = { ...person, number: newNumber }
+
+      personService
+        .update(id, changedPerson).then(returnedPerson => {
+          setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
+        })
+        .catch(error => {
+          alert(
+            `${person.name} was already deleted from server`
+          )
+          setPersons(persons.filter(p => p.id !== id))
+        })
+    }
+  }
+
+  const addPerson = () => {
+    const person = {
       name: newName,
       number: newNumber
     }
-    if (!persons.find(p => p.name === personObject.name)) {
-      personService
-        .create(personObject).then(returnedPerson => {
-          setPersons(persons.concat(returnedPerson))
-          setNewName('')
-          setNewNumber('')
-        })
-    } else {
-      alert(`${personObject.name} is already added to the phonebook`)
-    }
+    personService
+      .create(person).then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+      })
   }
 
   const deletePerson = id => {
@@ -115,7 +138,7 @@ const App = () => {
       <Filter value={filter} onChange={handleFilterChange}/>
 
       <PersonForm
-        onSubmit={addPerson}
+        onSubmit={savePerson}
         newName={newName}
         onNameChange={handleNameChange}
         newNumber={newNumber}
