@@ -19,12 +19,12 @@ const CountryDetails = ({country}) => {
   )
 }
 
-const Countries = ({matches}) => {
+const Countries = ({matches, goToCountry}) => {
   if (matches.length > 10) {
     return <div>Too many matches, specify another filter</div>
   }
   if (matches.length > 1) {
-    return <CountryList countries={matches} />
+    return <CountryList countries={matches} goToCountry={goToCountry} />
   }
   if (matches.length === 1) {
     return <CountryDetails country={matches[0]} />
@@ -32,9 +32,9 @@ const Countries = ({matches}) => {
   return <div>'No match'</div>
 }
 
-const CountryList = ({countries}) => {
+const CountryList = ({countries, goToCountry}) => {
   const rows = countries.map(c =>
-    <div key={c.name}>{c.name}</div>
+    <div key={c.name}>{c.name}<button onClick={() => goToCountry(c.name)}>show</button></div>
   )
   return (
     <div>{rows}</div>
@@ -54,8 +54,12 @@ const App = () => {
   }
   useEffect(hook, [])
 
-  const onFilterChange = (event) => {
+  const onFilterChange = event => {
     setFilter(event.target.value)
+  }
+
+  const goToCountry = countryName => {
+    setFilter(countryName)
   }
 
   const matches = countries.filter(c =>
@@ -67,7 +71,7 @@ const App = () => {
         find countries <input value={filter} onChange={onFilterChange}/>
       </div>
       <div>
-        <Countries matches={matches}/>
+        <Countries matches={matches} goToCountry={goToCountry}/>
       </div>
     </div>
   )
