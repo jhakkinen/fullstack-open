@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import personService from './services/persons'
 
-const Person = ({ person }) => {
+const Person = ({ person, onDelete }) => {
   return (
     <div>
       {person.name} {person.number}
+      <button onClick={onDelete}>delete</button>
     </div>
   )
 }
 
-const Persons = ({ persons }) => {
+const Persons = ({ persons, onDelete }) => {
   const rows = () => persons.map(person =>
     <Person
       key={person.id}
       person={person}
+      onDelete={() => onDelete(person.id)}
     />
   )
   return (
@@ -97,6 +99,15 @@ const App = () => {
     }
   }
 
+  const deletePerson = id => {
+    const person = persons.find(p => p.id === id)
+    if (!window.confirm(`Delete ${person.name}?`)) return
+
+    personService.destroy(id).then(() => {
+      setPersons(persons.filter(p => p.id !== id))
+    })
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -113,7 +124,10 @@ const App = () => {
 
       <h2>Numbers</h2>
 
-      <Persons persons={personsToShow}/>
+      <Persons
+        persons={personsToShow}
+        onDelete={deletePerson}
+      />
     </div>
   )
 
