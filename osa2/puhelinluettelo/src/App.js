@@ -49,24 +49,25 @@ const PersonForm = (props) => {
   )
 }
 
-const Notification = ({ message }) => {
+const Notification = ({ message, type }) => {
   if (message === null) {
     return null
   }
 
   return (
-    <div className="notification">
+    <div className={`notification ${type}`}>
       {message}
     </div>
   )
 }
 
 const App = () => {
-  const [ persons, setPersons] = useState([])
-  const [ newName, setNewName ] = useState('')
-  const [ newNumber, setNewNumber ] = useState('')
-  const [ filter, setFilter] = useState('')
+  const [persons, setPersons] = useState([])
+  const [newName, setNewName ] = useState('')
+  const [newNumber, setNewNumber ] = useState('')
+  const [filter, setFilter] = useState('')
   const [notificationMsg, setNotificationMsg] = useState(null)
+  const [notificationType, setNotificationType] = useState(null)
 
   const hook = () => {
     personService
@@ -78,8 +79,9 @@ const App = () => {
 
   useEffect(hook, [])
 
-  const notify = message => {
+  const notify = ({ message, type }) => {
     setNotificationMsg(message)
+    setNotificationType(type)
     setTimeout(() => {
       setNotificationMsg(null)
     }, 5000)
@@ -121,12 +123,10 @@ const App = () => {
       personService
         .update(id, changedPerson).then(returnedPerson => {
           setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
-          notify(`Updated ${returnedPerson.name}`)
+          notify({ message: `Updated ${returnedPerson.name}`, type: 'success' })
         })
         .catch(error => {
-          alert(
-            `${person.name} was already deleted from server`
-          )
+          notify({ message: `Information of ${person.name} has already been removed from server`, type: 'error'})
           setPersons(persons.filter(p => p.id !== id))
         })
     }
@@ -140,7 +140,7 @@ const App = () => {
     personService
       .create(person).then(returnedPerson => {
         setPersons(persons.concat(returnedPerson))
-        notify(`Added ${returnedPerson.name}`)
+        notify({ message: `Added ${returnedPerson.name}`, type: 'success' })
       })
   }
 
@@ -150,7 +150,7 @@ const App = () => {
 
     personService.destroy(id).then(() => {
       setPersons(persons.filter(p => p.id !== id))
-      notify(`Deleted ${person.name}`)
+      notify({ message: `Deleted ${person.name}`, type: 'success' })
     })
   }
 
@@ -158,7 +158,7 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
 
-      <Notification message={notificationMsg} />
+      <Notification message={notificationMsg} type={notificationType} />
 
       <Filter value={filter} onChange={handleFilterChange}/>
 
